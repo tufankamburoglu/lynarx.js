@@ -1,13 +1,27 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
-const dotenv = require('dotenv');
+require('dotenv').config();
 
-dotenv.config();
-
-const token = process.env.DISCORD_TOKEN;
+const { DISCORD_TOKEN } = process.env;
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+client.commands = new Collection();
+client.commandArray = [];
+
+// Functions
+const functionFolder = fs.readdirSync('./src/functions');
+for (const folder of functionFolder) {
+	const functionFiles = fs.readdirSync(`./src/functions/${folder}`).filter((file) => file.endsWith('.js'));
+	for (const file of functionFiles) {
+		require(`./functions/${folder}/${file}`)(client);
+	}
+}
+
+client.handleEvents();
+client.handleCommands();
+client.login(DISCORD_TOKEN);
 
 // Events
 const eventsPath = path.join(__dirname, 'events');
@@ -25,7 +39,7 @@ for (const file of eventFiles) {
 }
 
 // Commands
-client.commands = new Collection();
+
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
@@ -34,5 +48,3 @@ for (const file of commandFiles) {
 	const command = require(filePath);
 	client.commands.set(command.data.name, command);
 }
-
-client.login(token);

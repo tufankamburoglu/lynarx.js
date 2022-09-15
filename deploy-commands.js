@@ -1,27 +1,24 @@
 const fs = require('node:fs');
-const path = require('node:path');
 const { Routes } = require('discord.js');
 const { REST } = require('@discordjs/rest');
-const dotenv = require('dotenv');
+require('dotenv').config();
 
-dotenv.config();
-
-const token = process.env.DISCORD_TOKEN;
-const clientId = process.env.CLIENT_ID;
-const guildId = process.env.GUILD_ID;
+const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } = process.env;
 
 const commands = [];
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+const commandFolders = fs.readdirSync('./src/commands');
 
-for (const file of commandFiles) {
-	const filePath = path.join(commandsPath, file);
-	const command = require(filePath);
-	commands.push(command.data.toJSON());
+for (const folder of commandFolders) {
+	const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter((file) => file.endsWith('.js'));
+
+	for (const file of commandFiles) {
+		const command = require(`./src/commands/${folder}/${file}`);
+		commands.push(command.data.toJSON());
+		console.log(`Command: ${command.data.name} has been added.`);
+	}
 }
+const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 
-const rest = new REST({ version: '10' }).setToken(token);
-
-rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
+rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands })
 	.then((data) => console.log(`Successfully registered ${data.length} application commands.`))
 	.catch(console.error);
