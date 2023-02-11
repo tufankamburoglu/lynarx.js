@@ -1,7 +1,10 @@
 module.exports = {
-	name: 'ready',
+	name: "ready",
 	once: true,
 	async execute(client) {
-		console.log(`Ready! Logged in as ${client.user.tag}`);
+		setTimeout(client.pickPresence, 1 * 1000);
+		//setTimeout(client.checkVideo, 1 * 1000);
+		//setInterval(client.checkVideo, 60 * 1000);
+		console.log(`${client.user.tag} has logged into Discord!`);	
 	},
 };
