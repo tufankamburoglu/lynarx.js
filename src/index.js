@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { Client, Collection } = require("discord.js");
+const { Player } = require("discord-player");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
@@ -23,6 +24,14 @@ for (const folder of functionFolder) {
 		require(`./functions/${folder}/${file}`)(client);
 	}
 }
+
+client.player = new Player(client, {
+	ytdlOptions: {
+		filter: "audioonly",
+		quality: "highestaudio",
+		highWaterMark: 1 << 25,
+	},
+});
 
 client.handleEvents();
 client.handleCommands();
